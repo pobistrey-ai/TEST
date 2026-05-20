@@ -1,0 +1,93 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  article?: boolean;
+  publishedTime?: Date;
+  canonical?: string;
+  author?: string;
+  section?: string;
+}
+
+const { 
+  title, 
+  description, 
+  image, 
+  article = false, 
+  publishedTime, 
+  canonical,
+  author = 'Автор блога',
+  section = 'Блог'
+} = Astro.props;
+
+const siteUrl = import.meta.env.SITE || 'https://yourblog.com';
+const finalTitle = title ? `${title} | Мой блог` : 'Мой блог';
+
+// 🔥 Умная обработка изображения: относительный путь → абсолютный
+const fullImageUrl = image
+  ? image.startsWith('http')
+    ? image
+    : new URL(image, siteUrl).href
+  : `${siteUrl}/og-default.png`;
+
+// 🔥 Canonical URL: если не указан — берём текущий путь
+const finalCanonical = canonical || `${siteUrl}${Astro.url.pathname}`;
+---
+
+<!-- === БАЗОВЫЕ МЕТА-ТЕГИ === -->
+<title>{finalTitle}</title>
+<meta name="description" content={description} />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href={finalCanonical} />
+
+<!-- === OPEN GRAPH (Facebook, Telegram, WhatsApp, VK) === -->
+<meta property="og:type" content={article ? 'article' : 'website'} />
+<meta property="og:url" content={finalCanonical} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={fullImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="Мой блог" />
+<meta property="og:locale" content="ru_RU" />
+
+<!-- === TWITTER CARDS === -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={fullImageUrl} />
+
+<!-- === ARTICLE META (если это пост) === -->
+{article && publishedTime && (
+  <>
+    <meta property="article:published_time" content={publishedTime.toISOString()} />
+    <meta property="article:author" content={author} />
+    <meta property="article:section" content={section} />
+  </>
+)}
+
+<!-- === SCHEMA.ORG JSON-LD (для расширенных сниппетов в Google) === -->
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": article ? "BlogPosting" : "WebSite",
+    "headline": title,
+    "description": description,
+    "image": fullImageUrl,
+    "url": finalCanonical,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Мой блог",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/favicon.svg`
+      }
+    },
+    ...(article && publishedTime && {
+      "datePublished": publishedTime.toISOString(),
+      "author": { "@type": "Person", "name": author }
+    })
+  }
+</script>

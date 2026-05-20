@@ -1,0 +1,115 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { getCollection } from 'astro:content';
+import { readdirSync, existsSync } from 'fs';
+import { join } from 'path';
+
+const allAlbums = await getCollection('albums', ({ data }) => !data.draft);
+const albums = allAlbums.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// 🔍 Авто-поиск обложки: сканирует папку public/galleries/[id]/
+function getCover(albumId: string) {
+  // 👈 Добавлен тип : string
+  const dir = join(process.cwd(), 'public', 'galleries', albumId);
+  if (!existsSync(dir)) return '/og-default.png';
+
+  const files = readdirSync(dir);
+  const firstImg = files.filter((f) => /\.(jpg|jpeg|png|webp|avif|gif)$/i.test(f)).sort()[0];
+
+  return firstImg ? `/galleries/${albumId}/${firstImg}` : '/og-default.png';
+}
+---
+
+<BlogLayout title="Галерея" description="Фотоальбомы и визуальные истории">
+  <h1>🖼️ Галерея</h1>
+
+  {
+    albums.length > 0 ? (
+      <div class="albums-grid">
+        {albums.map((album) => {
+          const cover = getCover(album.id);
+          return (
+            <article class="album-card">
+              <a href={`/galleries/${album.id}`} class="card-link">
+                <div class="cover-wrapper">
+                  <img src={cover} alt={album.data.title} loading="lazy" width="400" height="300" />
+                </div>
+                <div class="card-content">
+                  <h2>{album.data.title}</h2>
+                  {album.data.description && <p>{album.data.description}</p>}
+                  <time>{album.data.pubDate.toLocaleDateString('ru-RU')}</time>
+                </div>
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    ) : (
+      <p class="empty-state">Альбомов пока нет</p>
+    )
+  }
+</BlogLayout>
+
+<style>
+  .albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .album-card {
+    background: var(--accent-primary, #fff);
+    border: var(--border, 1px solid #e0e0e0);
+    border-radius: 12px;
+    overflow: hidden;
+    transition:
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+  .album-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .cover-wrapper {
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: var(--border, #f0f0f0);
+  }
+  .cover-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  .album-card:hover .cover-wrapper img {
+    transform: scale(1.03);
+  }
+  .card-content {
+    padding: 1rem;
+  }
+  .card-content h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    color: var(--text, #333);
+  }
+  .card-content p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary, #666);
+    line-height: 1.4;
+  }
+  .card-content time {
+    font-size: 0.8rem;
+    color: var(--text-tertiary, #999);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary, #666);
+  }
+</style>

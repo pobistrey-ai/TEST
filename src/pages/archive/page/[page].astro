@@ -1,0 +1,151 @@
+---
+export const prerender = true;
+
+import BlogLayout from '../../../layouts/BlogLayout.astro';
+import { getPostsByType } from '../../../utils/blog';
+
+// Генерируем все статические страницы (1, 2, 3...)
+export async function getStaticPaths() {
+  const allPosts = await getPostsByType('post');
+  const postsPerPage = 10;
+  const totalPages = Math.ceil(allPosts.length / postsPerPage);
+  
+  // Если нет постов, создаем хотя бы одну пустую страницу
+  if (totalPages === 0) {
+    return [{ params: { page: '1' } }];
+  }
+  
+  return Array.from({ length: totalPages }, (_, i) => ({
+    params: { page: String(i + 1) }
+  }));
+}
+
+// Получаем номер текущей страницы из URL
+const { page } = Astro.params;
+const currentPage = parseInt(page);
+const postsPerPage = 10;
+
+// Загружаем все посты
+const allPosts = await getPostsByType('post');
+const totalPages = Math.ceil(allPosts.length / postsPerPage);
+
+// Вычисляем, какие посты показывать на текущей странице
+const start = (currentPage - 1) * postsPerPage;
+const currentPosts = allPosts.slice(start, start + postsPerPage);
+
+// Вычисляем номера страниц для навигации (показываем текущую и соседние)
+const startPage = Math.max(1, currentPage - 1);
+const endPage = Math.min(totalPages, currentPage + 1);
+const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+---
+
+<BlogLayout title="Архив статей" description="Все посты блога">
+  <h1>🗄️ Архив статей</h1>
+
+  {
+    currentPosts.length ? (
+      <>
+        {currentPosts.map((post) => (
+          <article
+            style={{
+              marginBottom: '2rem',
+              borderBottom: '1px solid var(--border, #ccc)',
+              paddingBottom: '1rem',
+            }}
+          >
+            <span class="type-badge">📝 Пост</span>
+            <h2>
+              <a href={`/posts/${post.slug}`}>{post.data.title}</a>
+            </h2>
+            <time>{post.data.pubDate.toLocaleDateString('ru-RU')}</time>
+            <p>{post.data.description}</p>
+          </article>
+        ))}
+
+        <nav class="pagination">
+          {currentPage > 1 && (
+            <a
+              href={`/archive/page/${currentPage - 1}`}
+              class="page-link arrow"
+              aria-label="Предыдущая страница"
+            >
+              ←
+            </a>
+          )}
+          {pageNumbers.map((num) => (
+            <a
+              href={`/archive/page/${num}`}
+              class={`page-link ${num === currentPage ? 'active' : ''}`}
+            >
+              {num}
+            </a>
+          ))}
+          {currentPage < totalPages && (
+            <a
+              href={`/archive/page/${currentPage + 1}`}
+              class="page-link arrow"
+              aria-label="Следующая страница"
+            >
+              →
+            </a>
+          )}
+        </nav>
+      </>
+    ) : (
+      <p>Статей пока нет</p>
+    )
+  }
+</BlogLayout>
+
+<style>
+  .type-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    background: #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    color: #555;
+  }
+
+  .pagination {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.5rem;
+    text-decoration: none;
+    border: 1px solid var(--accent-primary, #0070f3);
+    border-radius: 6px;
+    color: var(--accent-primary, #0070f3);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .page-link:hover:not(.active) {
+    background: var(--accent-primary, #0070f3);
+    color: white;
+  }
+
+  .page-link.active {
+    background: var(--accent-primary, #0070f3);
+    color: white;
+    font-weight: 700;
+    border-color: var(--accent-primary, #0070f3);
+    cursor: default;
+  }
+
+  .arrow {
+    font-size: 1.2rem;
+    padding: 0 0.75rem;
+  }
+</style>

@@ -1,0 +1,15 @@
+📌 Сценарий 1: Фото только для этой статьи 
+Куда кидать: src/assets/posts/название-поста/
+(например: src/assets/posts/kitchen-tiles/photo.jpg)
+Синтаксис в .md:
+![Описание](../../assets/posts/kitchen-tiles/photo.jpg)
+
+
+
+📌 Сценарий 2: Переиспользование фото из галереи 
+Где лежат: Уже в public/galleries/имя-альбома/
+Синтаксис в .md:
+![Описание](/galleries/имя-альбома/photo.jpg)
+
+
+

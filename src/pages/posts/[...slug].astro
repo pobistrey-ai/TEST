@@ -1,0 +1,99 @@
+---
+// ⚠️ ЭТА СТРОКА ДОЛЖНА БЫТЬ ВНЕ ФРОНТМАТТЕРА
+export const prerender = true;
+
+import { getCollection, render } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import SEO from '../../components/SEO.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BlogLayout title={post.data.title} description={post.data.description || ''} image={post.data.coverImage}>
+  <SEO
+    title={post.data.title}
+    description={post.data.description || ''}
+    image={post.data.coverImage}
+    article={true}
+    publishedTime={post.data.pubDate}
+    canonical={Astro.url.href}
+  />
+  <article>
+    <header>
+      <h1>{post.data.title}</h1>
+      <div class="post-meta">
+        <time datetime={post.data.pubDate.toISOString()}>
+          {post.data.pubDate.toLocaleDateString('ru-RU')}
+        </time>
+        {
+          post.data.updatedDate && (
+            <span> (обновлено {post.data.updatedDate.toLocaleDateString('ru-RU')})</span>
+          )
+        }
+        <button id="copyLinkBtn" class="copy-btn">📋 Скопировать ссылку</button>
+      </div>
+    </header>
+    <Content />
+  </article>
+</BlogLayout>
+
+<script>
+  const button = document.getElementById('copyLinkBtn');
+  const url = window.location.href;
+  if (button) {
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = button.textContent;
+        button.textContent = '✅ Скопировано!';
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.textContent = original;
+          button.classList.remove('copied');
+        }, 2000);
+      } catch {
+        button.textContent = '❌ Ошибка';
+        setTimeout(() => (button.textContent = '📋 Скопировать ссылку'), 2000);
+      }
+    });
+  }
+</script>
+
+<style>
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.5rem 0 1rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  .copy-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover {
+    background: #f0f0f0;
+    border-color: #999;
+  }
+  .copy-btn.copied {
+    background: #4caf50;
+    color: #fff;
+    border-color: #4caf50;
+  }
+</style>

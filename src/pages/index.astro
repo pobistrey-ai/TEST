@@ -1,0 +1,40 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { getMixedFeed } from '../utils/blog';
+
+// Получаем 10 последних записей (посты + новости, отсортированные по дате)
+const posts = await getMixedFeed(10);
+---
+
+<BlogLayout title="Главная" description="Мой блог">
+  <h1>📝 КОНТЕНТ</h1>
+
+  {
+    posts.length > 0 ? (
+      posts.map((post) => (
+        <article style={{ marginBottom: '2rem', borderBottom: '1px solid #ccc', paddingBottom: '1rem' }}>
+          <span class="type-badge">{post.data.type === 'news' ? '📰 Новость' : '📝 Пост'}</span>
+          <h2>
+            <a href={`/posts/${post.slug}`}>{post.data.title}</a>
+          </h2>
+          <time>{post.data.pubDate.toLocaleDateString('ru-RU')}</time>
+          <p>{post.data.description}</p>
+        </article>
+      ))
+    ) : (
+      <p>Записей пока нет</p>
+    )
+  }
+</BlogLayout>
+
+<style>
+  .type-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    background: #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    color: #555;
+  }
+</style>

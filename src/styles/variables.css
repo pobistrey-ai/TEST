@@ -1,0 +1,42 @@
+:root {
+  --max-w: 800px;
+
+  /* ЦВЕТА */
+  --bg-body: #0a0a0c;
+  --bg-surface: #131316;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  --accent-primary: #21b6f1;
+  --accent-hover: #a9fcff;
+  --accent-glow: rgb(155, 255, 247);
+  --header-border: #ffb561;
+
+  --text-main: #e2e8f0;
+  --text-muted: #8b9bb4;
+  --text-on-accent: #0a0a0c;
+
+  /* ШРИФТЫ */
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* ГРАНИЦЫ  */
+  --border: 1px solid;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+
+  /* РАЗМЕРЫ */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 2rem;
+
+  /* ОТСТУПЫ  */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  --transition-fast: 0.2s ease;
+}

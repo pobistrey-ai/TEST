@@ -1,0 +1,18 @@
+---
+// src/components/Image.astro
+const { src, alt, class: className = '', ...rest } = Astro.props;
+
+let finalSrc = src;
+
+// Динамический импорт для относительных путей
+if (src && (src.startsWith('./') || src.startsWith('../'))) {
+  try {
+    const mod = await import(src);
+    finalSrc = mod.default?.src || mod.src || mod;
+  } catch (e) {
+    console.error(`[Image] Failed to import: ${src}`, e);
+  }
+}
+---
+
+<img src={finalSrc} alt={alt} class={className} {...rest} loading="lazy" decoding="async" />
