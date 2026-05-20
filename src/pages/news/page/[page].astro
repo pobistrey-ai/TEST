@@ -9,14 +9,14 @@ export async function getStaticPaths() {
   const allNews = await getPostsByType('news');
   const postsPerPage = 10;
   const totalPages = Math.ceil(allNews.length / postsPerPage);
-  
+
   // Если нет новостей, создаем хотя бы одну пустую страницу
   if (totalPages === 0) {
     return [{ params: { page: '1' } }];
   }
-  
+
   return Array.from({ length: totalPages }, (_, i) => ({
-    params: { page: String(i + 1) }
+    params: { page: String(i + 1) },
   }));
 }
 
@@ -62,34 +62,33 @@ const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => st
           </article>
         ))}
 
-        <nav class="pagination">
-          {currentPage > 1 && (
-            <a
-              href={`/news/page/${currentPage - 1}`}
-              class="page-link arrow"
-              aria-label="Предыдущая страница"
-            >
-              ←
-            </a>
-          )}
-          {pageNumbers.map((num) => (
-            <a
-              href={`/news/page/${num}`}
-              class={`page-link ${num === currentPage ? 'active' : ''}`}
-            >
-              {num}
-            </a>
-          ))}
-          {currentPage < totalPages && (
-            <a
-              href={`/news/page/${currentPage + 1}`}
-              class="page-link arrow"
-              aria-label="Следующая страница"
-            >
-              →
-            </a>
-          )}
-        </nav>
+        {totalPages > 1 && (
+          <nav class="pagination">
+            {currentPage > 1 && (
+              <a
+                href={`/news/page/${currentPage - 1}`}
+                class="page-link arrow"
+                aria-label="Предыдущая страница"
+              >
+                ←
+              </a>
+            )}
+            {pageNumbers.map((num) => (
+              <a href={`/news/page/${num}`} class={`page-link ${num === currentPage ? 'active' : ''}`}>
+                {num}
+              </a>
+            ))}
+            {currentPage < totalPages && (
+              <a
+                href={`/news/page/${currentPage + 1}`}
+                class="page-link arrow"
+                aria-label="Следующая страница"
+              >
+                →
+              </a>
+            )}
+          </nav>
+        )}
       </>
     ) : (
       <p>Новостей пока нет</p>
